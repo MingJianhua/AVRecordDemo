@@ -45,17 +45,8 @@ public class MainActivity extends Activity {
 
         mVideoContainer =(FrameLayout) findViewById( R.id.videoContainer );
 
-        /*
-        Point screenSize = new Point();
-        getWindowManager().getDefaultDisplay().getSize(screenSize);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mVideoContainer.getLayoutParams();
-        params.width = 400;
-        params.height = 300;
-        mVideoContainer.setLayoutParams(params);
-*/
         mActivity = this;
 
-        //final File sSavePictureFile = getOutputMediaFile();
         Button btnStart = (Button) findViewById( R.id.btn_start );
         Button btnStop = (Button) findViewById( R.id.btn_stop );
         Button btnStartRecord = (Button) findViewById( R.id.btn_startrecord );
@@ -82,14 +73,15 @@ public class MainActivity extends Activity {
                         Log.i( "=====>222222" , "OnMediaStatus" + status );
                     }
                 },  getCaptureFile(Environment.DIRECTORY_MOVIES, ".mp4").toString());
-
-                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_WIDTH, 540);
-                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_HEIGHT, 960);
-                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_BIT_RATE, 2000);
+/*
+                //默认参数，可以不设，如需改变输出参数，在这里设置
+                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_WIDTH, 1080);
+                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_HEIGHT, 1920);
+                mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_BIT_RATE, 8000);
                 mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_FRAME_RATE, 20);
                 mMagicModule.SetParam(mMagicModule.PARAM_AUDIO_CHANNEL, 1);
                 mMagicModule.SetParam(mMagicModule.PARAM_AUDIO_SAMPLE_RATE, 44100);
-
+*/
                 mMagicModule.Start();
             }
         } );
@@ -107,7 +99,7 @@ public class MainActivity extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mMagicModule.CapturePhoto(getOutputMediaFile());
+                        mMagicModule.CapturePhoto(getOutputMediaFile().toString());
                     }
                 });
         btnStartRecord.setOnClickListener(

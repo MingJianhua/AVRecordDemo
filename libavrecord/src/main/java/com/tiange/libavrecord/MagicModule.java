@@ -97,7 +97,17 @@ public class MagicModule {
 		} else {
 			Log.d("chengcj1", "Can't Detect Orientation");
 		}
+		SetDefaultParams();
 		//Start();
+	}
+	public void SetDefaultParams()
+	{
+		SetParam(PARAM_VIDEO_WIDTH, 1080);
+		SetParam(PARAM_VIDEO_HEIGHT, 1920);
+		SetParam(PARAM_VIDEO_BIT_RATE, 8000);
+		SetParam(PARAM_VIDEO_FRAME_RATE, 20);
+		SetParam(PARAM_AUDIO_CHANNEL, 1);
+		SetParam(PARAM_AUDIO_SAMPLE_RATE, 44100);
 	}
 	public void SetParam(int nParamID, float fValue)
 	{
@@ -219,7 +229,7 @@ public class MagicModule {
 					mGlSurfaceView.setY((height - viewHeght) / 2);
 				}
 				mVideoEcho = new VideoEchoDisplay(mContext, mGlSurfaceView,
-						null, m_nOutWidth, m_nOutHeight, 1280, 720,
+						null, m_nOutWidth, m_nOutHeight, 1920, 1080,
 						mBitrate, null);
 				mVideoEcho.SetRecordingState(true);
 				mVideoEcho.OnResume();
@@ -229,10 +239,9 @@ public class MagicModule {
 		//mAudioEncorder.start();
 	}
 
-	public void CapturePhoto(File file)
+	public void CapturePhoto(String sFilePath)
 	{
-		mVideoEcho.onTakePicture(file, null, null, mOrientation);
-
+		mVideoEcho.onTakePicture(new File(sFilePath), null, null, mOrientation);
 	}
 	public void DeleteInput(){
 		if( framelayout == null )

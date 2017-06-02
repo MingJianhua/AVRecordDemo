@@ -57,9 +57,9 @@ import java.nio.FloatBuffer;
          SurfaceTexture.OnFrameAvailableListener {
      private static final String TAG = "ContinuosEchoDisplay";
 
-     private static final int VIDEO_WIDTH = 1280;  // dimensions for 720p video
-     private static final int VIDEO_HEIGHT = 720;
-     private static final int DESIRED_PREVIEW_FPS = 15;
+     private static final int VIDEO_WIDTH = 1920;  // dimensions for 720p video
+     private static final int VIDEO_HEIGHT = 1080;
+     private static final int DESIRED_PREVIEW_FPS = 20;
 
      private EglCore mEglCore;
      private WindowSurface mDisplaySurface;
@@ -164,9 +164,9 @@ import java.nio.FloatBuffer;
     	 mCameraInputFilter= new MagicCameraInputFilter();
     	 mCameraInputFilter.init();
     	 
-    	mCameraInputFilter.onDisplaySizeChanged(1280, 720);
-    	mCameraInputFilter.onOutputSizeChanged(1280, 720);
- 		mCameraInputFilter.initCameraFrameBuffer(1280, 720);
+    	mCameraInputFilter.onDisplaySizeChanged(VIDEO_WIDTH, VIDEO_HEIGHT);
+    	mCameraInputFilter.onOutputSizeChanged(VIDEO_WIDTH, VIDEO_HEIGHT);
+ 		mCameraInputFilter.initCameraFrameBuffer(VIDEO_WIDTH, VIDEO_HEIGHT);
  		
  		mGLCubeBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.CUBE.length * 4)
                 .order(ByteOrder.nativeOrder())
@@ -183,8 +183,8 @@ import java.nio.FloatBuffer;
     	 mBeautyFilter.init();
     	 mBeautyFilter.setBeautyLevel( 5 );
     	 
-         mBeautyFilter.onDisplaySizeChanged(1280, 720);
-         mBeautyFilter.onOutputSizeChanged(1280, 720);
+         mBeautyFilter.onDisplaySizeChanged(VIDEO_WIDTH, VIDEO_HEIGHT);
+         mBeautyFilter.onOutputSizeChanged(VIDEO_WIDTH, VIDEO_HEIGHT);
     	 
          mSurfaceView = mHolder;
          mContext = contex;
