@@ -24,6 +24,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 public class MagicModule {
+	private static final String TAG = "MagicModule";
+
 	public static final int PARAM_VIDEO_BIT_RATE = 0;//kbps, default 800kbps
 	public static final int PARAM_VIDEO_WIDTH = 1;
 	public static final int PARAM_VIDEO_HEIGHT = 2;
@@ -40,18 +42,19 @@ public class MagicModule {
 	public static int AVSTATUS_CAMERA_OPEN_FAIL = 1;  //camera open fail
 	public static int AVSTATUS_AUDIO_OPEN_FAIL  = 2;  //audio record open fail
 	
-	public static int RTMP_CONNECT_FAIL        = 3;  // rtmp connect fail
-	public static int RTMP_CONNECT_SUCCESS     = 4;  // rtmp connection success 
-	
-	public static int RTMP_CONNECTION_CLOSED   = 5;  // rtmp last connection
-	
-	
+	public static int AVSTATUS_RECORD_START = 10;
+	public static int AVSTATUS_RECORD_STOP = 11;
+	public static int AVSTATUS_RECORD_TIME = 12;
+
 	public interface IStatusCallbak{
 		
 		void OnRtmpStatus( int status );
 		
 		void OnMediaStatus( int status );
-		
+
+		void OnRecordTime(long nTime);//毫秒
+		void OnRecordStatus(int nStatus);//毫秒
+
 	}
 	
 	int STATUS_STOP 	= 0;
@@ -66,7 +69,7 @@ public class MagicModule {
 	VideoEchoDisplay  mVideoEcho;
 	FrameLayout       framelayout;
 	String 			  mSaveFilePath;
-	private int       mBitrate = 800;//kbps
+	private int       mBitrate = 8000;//kbps
 	private int       mFps = 20;
 	private int 	  mOrientation = 0;
 
@@ -80,12 +83,12 @@ public class MagicModule {
 
 	MediaMuxerWrapper mMixerWrapper = null;
 	private AudioAACEncoder mAudioEncorder;
-
+	private IStatusCallbak mStatusCallback;
 	public MagicModule(Activity ctx , ViewGroup viewGroup, IStatusCallbak callback, String sSaveFilePath) {
 		mContext     = ctx;
 		mViewGroup = viewGroup;
 		mSaveFilePath = sSaveFilePath;
-
+		mStatusCallback = callback;
 		mAlbumOrientationEventListener = new AlbumOrientationEventListener(mContext, SensorManager.SENSOR_DELAY_NORMAL);
 		if (mAlbumOrientationEventListener.canDetectOrientation()) {
 			mAlbumOrientationEventListener.enable();
@@ -181,7 +184,15 @@ public class MagicModule {
 			e.printStackTrace();
 		}
 
+		MediaMuxerWrapper.IStatusCallbak mMagicModuleCallback = new MediaMuxerWrapper.IStatusCallbak() {
 
+			@Override
+			public void OnRecordTime(long nTime)//毫秒
+			{
+				mStatusCallback.OnRecordTime(nTime);
+			}
+		};
+		mMixerWrapper.SetCallback(mMagicModuleCallback);
 		mAudioEncorder = new AudioAACEncoder( null );
 		mAudioEncorder.setMuxer(mMixerWrapper);
 		mAudioEncorder.start();
@@ -189,11 +200,16 @@ public class MagicModule {
 		mVideoEcho.SetRecordingState(true);
 		mVideoEcho.SetMixerWapper(mMixerWrapper);
 		mVideoEcho.StartRecord();
+
+		mStatusCallback.OnRecordStatus(AVSTATUS_RECORD_START);
+
 	}
 	public void StopRecord()
 	{
+
 		mAudioEncorder.stop();
 		mVideoEcho.StopRecord();
+		mStatusCallback.OnRecordStatus(AVSTATUS_RECORD_STOP);
 	}
 	public void StartCameraPreview() {
 
@@ -205,9 +221,7 @@ public class MagicModule {
 			mContext.addContentView(framelayout, new LayoutParams(-1, -1));
 		}
 
-		//mAudioEncorder = new AudioAACEncoder( null );
-		//mAudioEncorder.setMuxer(mMixerWrapper);
-		//mMixerWrapper.SetOrientationHint(mOrientation);
+
 		framelayout.post(new Runnable() {
 			@Override
 			public void run() {
@@ -329,6 +343,8 @@ public class MagicModule {
 		}
 
 	}
+
+
 	private class AlbumOrientationEventListener extends OrientationEventListener {
 		public AlbumOrientationEventListener(Context context) {
 			super(context);

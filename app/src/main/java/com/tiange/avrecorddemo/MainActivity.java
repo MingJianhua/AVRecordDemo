@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.hardware.SensorManager;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tiange.libavrecord.MagicModule;
@@ -39,7 +42,9 @@ public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     private static final String DIR_NAME = "AVRecSample";
     private static final SimpleDateFormat mDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
-
+    private static final int MESSAGE_UPDATA_TEXTVIEW_STATUS = 0;
+    private static final int MESSAGE_UPDATA_TEXTVIEW_TIME = 1;
+    TextView mTextViewRecordStatus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,23 +60,49 @@ public class MainActivity extends Activity {
         Button btnStopRecord = (Button) findViewById( R.id.btn_stoprecord );
         Button btnTakePicture = (Button) findViewById( R.id.btn_takephoto );
         Button btnSwitchCamera = (Button) findViewById( R.id.btn_switchcamera );
+        mTextViewRecordStatus = (TextView)findViewById(R.id.textViewRecordStatus);
 
         btnStart.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mMagicModule  = new MagicModule(  mActivity, mVideoContainer , new MagicModule.IStatusCallbak() {
                     @Override
+                    public void OnRecordStatus(int nStatus)
+                    {
+                        if(nStatus == MagicModule.AVSTATUS_RECORD_START)
+                        {
+                            Message message = new Message();
+                            message.what = MESSAGE_UPDATA_TEXTVIEW_STATUS;
+                            message.arg1 = 1;
+                            mHandler.sendMessage(message);
+                        }
+                        if(nStatus == MagicModule.AVSTATUS_RECORD_STOP)
+                        {
+                            Message message = new Message();
+                            message.what = MESSAGE_UPDATA_TEXTVIEW_STATUS;
+                            message.arg1 = 0;
+                            mHandler.sendMessage(message);
+                        }
+                    }
+                    @Override
+                    public void OnRecordTime(long nTime)//毫秒
+                    {
+                        Log.e(TAG, "OnRecordTime = " + nTime);
+                        Message message = new Message();
+                        message.what = MESSAGE_UPDATA_TEXTVIEW_TIME;
+                        message.arg1 = (int)nTime;
+                        mHandler.sendMessage(message);
+                    }
+                    @Override
                     public void OnRtmpStatus(int status) {
                         Log.i( "=====>111111" , "OnRtmpStatus" + status);
-                        if( status != MagicModule.RTMP_CONNECT_SUCCESS ){
-                            mMagicModule.CloseCamera();
-                            mMagicModule.DeleteInput();
-                        }
+
                     }
 
                     @Override
                     public void OnMediaStatus(int status) {
                         Log.i( "=====>222222" , "OnMediaStatus" + status );
+
                     }
                 },  getCaptureFilePath(Environment.DIRECTORY_MOVIES, ".mp4"));
 /*
@@ -85,7 +116,6 @@ public class MainActivity extends Activity {
 */
                 if(!mMagicModule.isCameraPermission())
                 {
-
                     Toast toast = Toast.makeText(getApplicationContext(),
                             "请到设置页面开启摄像头权限", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.CENTER, 0, 0);
@@ -165,7 +195,25 @@ public class MainActivity extends Activity {
 
     }
     boolean isSlient = false;
+    final Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            super.handleMessage(msg);
+            if(msg.what == MESSAGE_UPDATA_TEXTVIEW_TIME){
+                long nTime = msg.arg1;
+                mTextViewRecordStatus.setText("Recording:"+ nTime);
+            }
+            if(msg.what == MESSAGE_UPDATA_TEXTVIEW_STATUS){
+                int nStatus = msg.arg1;
+                if (nStatus == 0)
+                    mTextViewRecordStatus.setText("Stop");
+                else if (nStatus == 1)
+                    mTextViewRecordStatus.setText("Recording");
 
+
+            }
+        }
+    };
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub

@@ -270,6 +270,7 @@ import java.nio.FloatBuffer;
          // Give the camera a hint that we're recording video.  This can have a big
          // impact on frame rate.
          parms.setRecordingHint(true);
+         parms.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 
          mCamera.setParameters(parms);
 
@@ -353,6 +354,7 @@ import java.nio.FloatBuffer;
              throw new RuntimeException(ioe);
          }
          mCamera.startPreview();
+         mCamera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
 
          // TODO: adjust bit rate based on frame rate?
          // TODO: adjust video width/height based on what we're getting from the camera preview?

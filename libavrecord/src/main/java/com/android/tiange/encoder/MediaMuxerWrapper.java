@@ -37,6 +37,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class MediaMuxerWrapper {
+
+	public interface IStatusCallbak{
+		void OnRecordTime(long nTime);//毫秒
+	}
 	private static final boolean DEBUG = false;	// TODO set false on release
 	private static final String TAG = "MediaMuxerWrapper";
 
@@ -47,6 +51,11 @@ public class MediaMuxerWrapper {
 	private final MediaMuxer mMediaMuxer;	// API >= 18
 	private int mEncoderCount, mStatredCount;
 	private boolean mIsStarted;
+	private IStatusCallbak mStatusCallback;
+
+	long mStartTick      = 0;
+	long mAudioCurTick   = 0;
+	long mVideoCurTick   = 0;
 	//private MediaEncoder mVideoEncoder, mAudioEncoder;
 
 	/**
@@ -63,6 +72,10 @@ public class MediaMuxerWrapper {
 		mIsStarted = false;
 	}
 
+	public void SetCallback(IStatusCallbak callbak)
+	{
+		mStatusCallback = callbak;
+	}
 	public String getOutputPath() {
 		return mOutputPath;
 	}
@@ -131,6 +144,7 @@ public class MediaMuxerWrapper {
 	 */
 	/*package*/ synchronized public boolean start() {
 		Log.e(TAG,  "start:");
+		mVideoCurTick = mStartTick = mAudioCurTick = 0;
 		mStatredCount++;
 		if ((mEncoderCount > 0) && (mStatredCount == mEncoderCount)) {
 			mMediaMuxer.start();
@@ -153,6 +167,8 @@ public class MediaMuxerWrapper {
 			mIsStarted = false;
 			Log.e(TAG,  "MediaMuxer stopped:");
 		}
+		mVideoCurTick = mStartTick = mAudioCurTick = 0;
+
 	}
 
 	/**
@@ -178,8 +194,19 @@ public class MediaMuxerWrapper {
 	 * @param bufferInfo
 	 */
 	/*package*/ synchronized void writeSampleData(final int trackIndex, final ByteBuffer byteBuf, final MediaCodec.BufferInfo bufferInfo) {
-		if (mIsStarted)
+		if (mIsStarted) {
 			mMediaMuxer.writeSampleData(trackIndex, byteBuf, bufferInfo);
+			if (mStartTick == 0 && trackIndex == 0)
+			{
+				mStartTick = bufferInfo.presentationTimeUs;
+
+			}
+			if (trackIndex == 0)
+			{
+				mStatusCallback.OnRecordTime((bufferInfo.presentationTimeUs - mStartTick)/1000);
+			}
+			//Log.e(TAG, "bufferInfo.presentationTimeUs = " + bufferInfo.presentationTimeUs);
+		}
 	}
 
 //**********************************************************************

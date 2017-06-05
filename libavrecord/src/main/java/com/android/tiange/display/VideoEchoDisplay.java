@@ -507,7 +507,9 @@ public class VideoEchoDisplay extends MagicDisplay {
 							parms, mCameraWidth, mCameraHeight);
 					//mCamera.setDisplayOrientation(90);
 					parms.setRecordingHint(true);
+					parms.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 					mCamera.setParameters(parms);
+
 					Camera.Size mCameraPreviewSize = parms.getPreviewSize();
 					Size size = mCameraPreviewSize;
 					int orientation = info.orientation;
@@ -530,6 +532,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 					try {
 						mCamera.setPreviewTexture(mSurfaceTexture);
 						mCamera.startPreview();
+						mCamera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
