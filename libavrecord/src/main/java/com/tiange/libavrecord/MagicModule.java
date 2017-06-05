@@ -9,8 +9,12 @@ import com.android.tiange.encoder.MediaMuxerWrapper;
 import android.app.Activity;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.hardware.SensorManager;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaFormat;
+import android.media.MediaRecorder;
 import android.opengl.GLSurfaceView;
 
 import android.util.Log;
@@ -81,16 +85,7 @@ public class MagicModule {
 		mContext     = ctx;
 		mViewGroup = viewGroup;
 		mSaveFilePath = sSaveFilePath;
-		/*
-		try
-		{
-			mMixerWrapper = new MediaMuxerWrapper(mSaveFilePath);
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		*/
+
 		mAlbumOrientationEventListener = new AlbumOrientationEventListener(mContext, SensorManager.SENSOR_DELAY_NORMAL);
 		if (mAlbumOrientationEventListener.canDetectOrientation()) {
 			mAlbumOrientationEventListener.enable();
@@ -200,7 +195,7 @@ public class MagicModule {
 		mAudioEncorder.stop();
 		mVideoEcho.StopRecord();
 	}
-	public void Start() {
+	public void StartCameraPreview() {
 
 		mGlSurfaceView = new GLSurfaceView(mContext);
 		framelayout    = new FrameLayout(mContext);
@@ -289,9 +284,18 @@ public class MagicModule {
 
 	}
 	
-	public void swapCamera( boolean bFront ){
-		if( mVideoEcho != null )
-			mVideoEcho.SwapCamera(bFront);
+	public int swapCamera( boolean bFront ){
+		if (mVideoEcho == null)
+		{
+			return -1;
+		}
+		if (mMixerWrapper!=null && mMixerWrapper.isStarted())
+		{
+			return -2;
+		}
+
+		mVideoEcho.SwapCamera(bFront);
+		return 0;
 	}
 	
 	public void onResume()
@@ -348,5 +352,58 @@ public class MagicModule {
 				//返回的mOrientation就是手机方向，为0°、90°、180°和270°中的一个
 			}
 		}
+	}
+	public boolean isCameraPermission() {
+
+		boolean canUse =true;
+
+		Camera mCamera =null;
+
+		try{
+
+			mCamera = Camera.open();
+
+// setParameters 是针对魅族MX5。MX5通过Camera.open()拿到的Camera对象不为null
+
+			Camera.Parameters mParameters = mCamera.getParameters();
+
+			mCamera.setParameters(mParameters);
+
+		}catch(Exception e) {
+
+			canUse =false;
+
+		}
+
+		if(mCamera !=null) {
+
+			mCamera.release();
+
+		}
+		return canUse;
+
+	}
+	/**
+	 * 作用：用户是否同意录音权限
+	 *
+	 * @return true 同意 false 拒绝
+	 */
+	public boolean isVoicePermission() {
+
+		try {
+			AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+					AudioFormat.ENCODING_PCM_16BIT, AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_CONFIGURATION_MONO,
+					AudioFormat.ENCODING_PCM_16BIT));
+			record.startRecording();
+			int recordingState = record.getRecordingState();
+			if(recordingState == AudioRecord.RECORDSTATE_STOPPED){
+				return false;
+			}
+			record.release();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+
 	}
 }
