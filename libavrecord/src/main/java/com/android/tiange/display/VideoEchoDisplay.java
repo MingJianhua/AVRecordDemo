@@ -75,8 +75,6 @@ public class VideoEchoDisplay extends MagicDisplay {
 
 	private LostStatic mStatic = new LostStatic();
 
-	private int mBeautyLevel = 5;
-
 	private int mRotation = 0;
 	//private IVideoCallbak mCallback;
 
@@ -120,10 +118,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 	{
 		mVideoEncoder.SetMuxer(muxerWrapper);
 	}
-//	public void SetBeautyLevel( int leavel ){
-//		mBeautyLevel = leavel;
-//		SetLevel( leavel );
-//	}
+
 	
 	public void setCaptrueSize(int desireWidth, int desireHeight) {
 		mCameraHelper.mCameraWidth = desireWidth;
@@ -143,7 +138,10 @@ public class VideoEchoDisplay extends MagicDisplay {
 		if (mFullScreen == null)
 			mFullScreen = new FullFrameRect(new Texture2dProgram(
 					Texture2dProgram.ProgramType.TEXTURE_2D));
-		setFilter(6);
+		if (mLevel != 0) {
+			setFilter(6);
+			SetLevel( mLevel );
+		}
 		Log.i("[ VideoEcho ]", "onSurfaceCreated");
 	}
 
@@ -268,11 +266,6 @@ public class VideoEchoDisplay extends MagicDisplay {
 		mSaveTask.execute(bitmap);
 	}
 
-	//丢包索引
-	private int mLostIndex = 0;
-	//丢包间隔
-	private int mLostDelta = 0;
-
 	@Override
 	public void onDrawFrame(GL10 gl) {
 		if( isCameraSwapDown== false ){
@@ -306,30 +299,29 @@ public class VideoEchoDisplay extends MagicDisplay {
 		float[] mtx = new float[16];
 		mTextrue.getTransformMatrix(mtx);
 		mCameraInputFilter.setTextureTransformMatrix(mtx);
+		if (isRealRecordStart)
+		{
+			boolean isVideoRecording = mVideoEncoder.isRecording();
+
+			if (!isVideoRecording) {
+
+				int curBitrate = mBitrate * 1000;
+				if (curBitrate > 15000000) {
+					curBitrate = 15000000;
+				} else if (curBitrate < 100000) {
+					curBitrate = 100000;
+				}
+				mVideoEncoder
+						.startRecording(new TextureMovieEncoder.EncoderConfig(
+								null, mOutWidth, mOutHeight, curBitrate,
+								EGL14.eglGetCurrentContext()));
+			}
+		}
 		if (mFilters == null) {
 			mCameraInputFilter.onDrawFrame(mTextureId, mGLCubeBuffer,
 					mGLTextureBuffer);
+
 		} else {
-
-			if (isRealRecordStart)
-			{
-				boolean isVideoRecording = mVideoEncoder.isRecording();
-
-				if (!isVideoRecording) {
-
-					int curBitrate = mBitrate * 1000;
-					if (curBitrate > 15000000) {
-						curBitrate = 15000000;
-					} else if (curBitrate < 100000) {
-						curBitrate = 100000;
-					}
-					mVideoEncoder
-							.startRecording(new TextureMovieEncoder.EncoderConfig(
-									null, mOutWidth, mOutHeight, curBitrate,
-									EGL14.eglGetCurrentContext()));
-				}
-			}
-
 
 			int mBuftextureID = mCameraInputFilter.onDrawToTexture(mTextureId);
 
@@ -340,85 +332,22 @@ public class VideoEchoDisplay extends MagicDisplay {
 			mFullScreen
 					.drawFrame(mFboBuffer.mOffscreenTexture, mIdentityMatrix);
 
-			mLostIndex++;
-			//每秒钟更新fps操作
-			if( mStatic.isTickOut() )
+		}
+		if (isRealRecordStart) {
+			if (mFilters == null)
 			{
-				int mOutputFps = 20;
-				if (isRealRecordStart)
-				 	mOutputFps = mVideoEncoder.getOutputFPS();
 
-				int deltaFps = mOutputFps - frameRate;
+				mVideoEncoder.setTextureId(mTextureId);
+				mVideoEncoder.frameAvailable(mTextrue);
 
-				if( mOutputFps > frameRate )
-				{
-					//初始化丢帧频率
-					if( deltaFps > 5 ){
-						if( mLostDelta==0 ){
-							mLostDelta = mOutputFps/deltaFps + 2;
-						}else{
-							mLostDelta --;
-						}
-					}
-//			    Log.i( "output fps ==== " , mOutputFps + "mLostDelta＝＝＝" +mLostDelta + "render fps" + mPrevfps );
-				}else if( mOutputFps < frameRate ){
-					if( mLostDelta != 0 ){
-						if( deltaFps < -4 ){
-							mLostDelta += 2;
-						}else{
-							mLostDelta ++;
-						}
-					}
-				}
-
-				if (mLostDelta > 10 || mLostDelta < 0) {
-					mLostDelta = 0;
-				}
-//				Log.w( "output fps ==== " , "mOutputFps＝＝＝" +mOutputFps + "mLostDelta ==" + mLostDelta  + "mRenderfps" + mPrevfps );
 			}
-			if( mLostDelta == 0 || mLostIndex <  mLostDelta ){
-				if (isRealRecordStart) {
-					mVideoEncoder.setTextureId(mFboBuffer.mOffscreenTexture);
-					mVideoEncoder.frameAvailable(mIdentityMatrix,
-							mTextrue.getTimestamp());
-				}
-			}else{
-//				Log.i("lostDelta=======", " do lost video frame!!! ");
-				mLostIndex = 0;
+			else {
+				mVideoEncoder.setTextureId(mFboBuffer.mOffscreenTexture);
+				mVideoEncoder.frameAvailable(mIdentityMatrix,
+						mTextrue.getTimestamp());
 			}
 		}
 
-		mRenderfps++;
-		// caculate fps
-		if (mPrevSecTick != 0 && (mCurrentTick - mPrevSecTick) >= 1000) {
-			mPrevSecTick = mCurrentTick;
-			mPrevfps = mRenderfps;
-//			Log.i("render fps ===>******", "mRenderfps" + mRenderfps);
-			mRenderfps = 0;
-		}
-		if (mPrevSecTick == 0) {
-			mPrevSecTick = mCurrentTick;
-		}
-
-		long sleepSpan = 0;
-		if( mLastTick != 0 ){
-			long deltaTick = mCurrentTick - mLastTick;
-			int frameDelta =(int)(1000/frameRate);
-			
-			if( deltaTick < frameDelta ){
-				sleepSpan = frameDelta - deltaTick - 5;
-			}
-		}
-
-//		Log.i("=====>",  "sleepSpan ===> " + sleepSpan );
-		if( sleepSpan > 0 ){
-			try {
-				Thread.sleep(sleepSpan);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		mLastTick = System.currentTimeMillis();
 	}
 
 	private OnFrameAvailableListener mOnFrameAvailableListener = new OnFrameAvailableListener() {
