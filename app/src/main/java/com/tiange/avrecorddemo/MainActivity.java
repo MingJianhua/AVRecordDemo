@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void OnRecordTime(long nTime)//毫秒
                     {
-                        Log.e(TAG, "OnRecordTime = " + nTime);
+                        //Log.e(TAG, "OnRecordTime = " + nTime);
                         Message message = new Message();
                         message.what = MESSAGE_UPDATA_TEXTVIEW_TIME;
                         message.arg1 = (int)nTime;
@@ -114,7 +114,10 @@ public class MainActivity extends Activity {
                 mMagicModule.SetParam(mMagicModule.PARAM_VIDEO_FRAME_RATE, 20);
                 mMagicModule.SetParam(mMagicModule.PARAM_AUDIO_CHANNEL, 1);
                 mMagicModule.SetParam(mMagicModule.PARAM_AUDIO_SAMPLE_RATE, 44100);
+                mMagicModule.SetParam(mMagicModule.PARAM_BEAUTY_LEVEL, 0);//1-5，对美图等自带美颜相机，关闭美颜
 */
+                mMagicModule.SetParam(mMagicModule.PARAM_BEAUTY_LEVEL, 1);//1-5，对美图等自带美颜相机，关闭美颜
+
                 if(!mMagicModule.isCameraPermission())
                 {
                     Toast toast = Toast.makeText(getApplicationContext(),

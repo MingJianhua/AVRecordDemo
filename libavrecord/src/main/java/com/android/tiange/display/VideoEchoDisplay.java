@@ -321,7 +321,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 			mCameraInputFilter.onDrawFrame(mTextureId, mGLCubeBuffer,
 					mGLTextureBuffer);
 
-		} else {
+		} else {  
 
 			int mBuftextureID = mCameraInputFilter.onDrawToTexture(mTextureId);
 

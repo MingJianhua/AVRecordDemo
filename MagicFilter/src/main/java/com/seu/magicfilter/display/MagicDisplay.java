@@ -90,8 +90,8 @@ public abstract class MagicDisplay implements Renderer{
 		mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		//mGLSurfaceView.setAlpha((float) 0);
 	}
-	
-	int mLevel = 5;
+
+	public int mLevel = 5;
 	public void SetLevel( int level ){
 		mLevel = level;
 	}

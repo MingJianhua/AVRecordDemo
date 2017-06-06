@@ -36,6 +36,10 @@ public class MagicModule {
 	public static final int PARAM_AUDIO_CHANNEL = 11;
 	public static final int PARAM_AUDIO_BIT_RATE = 12;
 
+	public static final int PARAM_BEAUTY_LEVEL = 20;
+	public static final int PARAM_FILTER_INDEX = 21;
+
+
 
 
 	public static int AVSTATUS_ENCODER_OPEN_FAIL = 0;  //camera open fail
@@ -80,6 +84,8 @@ public class MagicModule {
 	long mAudioCurTick   = 0;
 	long mVideoCurTick   = 0;
 	boolean mbFront = false;
+	private int m_nBeautyLevel  = 3;//0-5
+
 	AlbumOrientationEventListener mAlbumOrientationEventListener;
 
 	MediaMuxerWrapper mMixerWrapper = null;
@@ -107,6 +113,8 @@ public class MagicModule {
 		SetParam(PARAM_VIDEO_FRAME_RATE, 20);
 		SetParam(PARAM_AUDIO_CHANNEL, 1);
 		SetParam(PARAM_AUDIO_SAMPLE_RATE, 44100);
+		SetParam(PARAM_BEAUTY_LEVEL, 3);
+
 	}
 	public void SetParam(int nParamID, float fValue)
 	{
@@ -135,6 +143,9 @@ public class MagicModule {
 			case PARAM_AUDIO_SAMPLE_RATE:
 				break;
 			case PARAM_AUDIO_BIT_RATE:
+				break;
+			case PARAM_BEAUTY_LEVEL:
+				m_nBeautyLevel = (int)fValue;
 				break;
 			default:
 				break;
@@ -244,6 +255,7 @@ public class MagicModule {
 				mVideoEcho = new VideoEchoDisplay(mContext, mGlSurfaceView,
 						null, m_nOutWidth, m_nOutHeight, 1920, 1080,
 						mBitrate, null);
+				mVideoEcho.SetLevel(m_nBeautyLevel);
 				mVideoEcho.SetDefaultCamera(mbFront);
 				mVideoEcho.SetRecordingState(true);
 				mVideoEcho.OnResume();
