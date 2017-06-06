@@ -53,6 +53,7 @@ public class CameraUtils {
                 Log.d(TAG, "parms.setPreviewSize " +
                         width + "x" + height);
                 parms.setPreviewSize(width, height);
+                parms.setPictureSize(width, height);
                 return;
             }
         }
@@ -60,6 +61,8 @@ public class CameraUtils {
         Log.w(TAG, "Unable to set preview size to " + width + "x" + height);
         if (ppsfv != null) {
             parms.setPreviewSize(ppsfv.width, ppsfv.height);
+            parms.setPictureSize(ppsfv.width, ppsfv.height);
+
         }
         // else use whatever the default size is
     }

@@ -2,6 +2,7 @@ package com.android.tiange.display;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -228,14 +229,23 @@ public class VideoEchoDisplay extends MagicDisplay {
 		//mCameraHelper.setRotation(90);
 		mRotation = nRotation;
 		mSaveTask = new SaveTask(mContext, file, listener);
-		mCameraHelper.takePicture(shutterCallback, null, mPictureCallback);
+		mCameraHelper.takePicture(null, null, mPictureCallback);
 	}
 
+
+	private Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback()
+	{
+		@Override
+		public void onShutter(){
+			Log.e("MJHTEST", "onShutter");
+		}
+	};
 	private Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
 
 		@Override
 		public void onPictureTaken(final byte[] data,Camera camera) {
-
+			Log.e("MJHTEST", "onPictureTaken mFilters = "+ mFilters);
+			mCameraHelper.stopPreview();
 			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 			if (isFrontCamera)
 				bitmap = rotateBitmapByDegree(bitmap, 270 - mRotation, false);
@@ -246,6 +256,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 			}else{
 				mSaveTask.execute(bitmap);
 			}
+			mCameraHelper.startPreview();
 		}
 	};
 
@@ -507,8 +518,12 @@ public class VideoEchoDisplay extends MagicDisplay {
 							parms, mCameraWidth, mCameraHeight);
 					//mCamera.setDisplayOrientation(90);
 					parms.setRecordingHint(true);
-					parms.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+					List<String> focusModes = parms.getSupportedFocusModes();
+					if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+						parms.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 					mCamera.setParameters(parms);
+
+
 
 					Camera.Size mCameraPreviewSize = parms.getPreviewSize();
 					Size size = mCameraPreviewSize;
@@ -549,6 +564,14 @@ public class VideoEchoDisplay extends MagicDisplay {
 			Camera.Parameters params = mCamera.getParameters();
 			params.setRotation(rotation);
 			mCamera.setParameters(params);
+		}
+		private void startPreview()
+		{
+			mCamera.startPreview();
+		}
+		private void stopPreview()
+		{
+			mCamera.stopPreview();
 		}
 	}
 

@@ -286,7 +286,7 @@ public class MainActivity extends Activity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINESE).format(new Date());
         String mediaFilePath = mediaStorageDir.getPath() + File.separator +
                 "IMG_" + timeStamp + ".jpg";
-
+        Log.e(TAG, "PictureFilePath = " + mediaFilePath);
         return mediaFilePath;
     }
 

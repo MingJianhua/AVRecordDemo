@@ -110,7 +110,10 @@ public abstract class MagicDisplay implements Renderer{
             		mFilters.destroy();
             	mFilters = null;
             	mFilters = MagicFilterFactory.getFilters(filterType, mContext);
-            	if(mFilters != null){
+				Log.v("MJHTEST", "MagicFilterFactory.getFilters mFilters = "+mFilters );
+
+				if(mFilters != null){
+
             		mFilters.SetLevel(mLevel);
             		mFilters.init();
             	}
@@ -123,6 +126,7 @@ public abstract class MagicDisplay implements Renderer{
     }
 	
 	protected void onFilterChanged(){
+		Log.v("MJHTEST", "onFilterChanged mFilters = "+mFilters );
 		if(mFilters == null)
 			return;
 		mFilters.onDisplaySizeChanged(mSurfaceWidth, mSurfaceHeight);
@@ -151,8 +155,10 @@ public abstract class MagicDisplay implements Renderer{
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
+				Log.v("MJHTEST", "getBitmapFromGL");
 				int width = bitmap.getWidth();
 				int height = bitmap.getHeight();
+				Log.v("MJHTEST", "getBitmapFromGL width = " + width + "  height = "+ height);
 				int[] mFrameBuffers = new int[1];
 				int[] mFrameBufferTextures = new int[1];
 				GLES20.glGenFramebuffers(1, mFrameBuffers, 0);	            

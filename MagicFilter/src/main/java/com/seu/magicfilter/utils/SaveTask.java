@@ -58,6 +58,7 @@ public class SaveTask extends AsyncTask<Bitmap, Integer, String>{
 	}
 	
 	private String saveBitmap(Bitmap bitmap) {
+
 		if (mFile.exists()) {
 			mFile.delete();
 		}
