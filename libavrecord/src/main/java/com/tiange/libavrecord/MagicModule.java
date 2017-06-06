@@ -79,6 +79,7 @@ public class MagicModule {
 	long mStartTick      = 0;
 	long mAudioCurTick   = 0;
 	long mVideoCurTick   = 0;
+	boolean mbFront = false;
 	AlbumOrientationEventListener mAlbumOrientationEventListener;
 
 	MediaMuxerWrapper mMixerWrapper = null;
@@ -177,9 +178,12 @@ public class MagicModule {
 		Log.e("MJHTEST", "StartRecord sSaveFilePath = " + sSaveFilePath);
 		try
 		{
+			Log.e("MJHTEST", "new MediaMuxerWrapper = " + sSaveFilePath);
 			mMixerWrapper = new MediaMuxerWrapper(sSaveFilePath);
+			Log.e("MJHTEST", "mMixerWrapper = " + mMixerWrapper);
+
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
@@ -240,6 +244,7 @@ public class MagicModule {
 				mVideoEcho = new VideoEchoDisplay(mContext, mGlSurfaceView,
 						null, m_nOutWidth, m_nOutHeight, 1920, 1080,
 						mBitrate, null);
+				mVideoEcho.SetDefaultCamera(mbFront);
 				mVideoEcho.SetRecordingState(true);
 				mVideoEcho.OnResume();
 			}
@@ -300,11 +305,12 @@ public class MagicModule {
 	
 	public int swapCamera( boolean bFront ){
 		if (mVideoEcho == null)
-		{
-			return -1;
+		{//未开始预览，设置默认摄像头
+			mbFront = bFront;
+			return 0;
 		}
 		if (mMixerWrapper!=null && mMixerWrapper.isStarted())
-		{
+		{//正在录制，禁止转摄像头
 			return -2;
 		}
 

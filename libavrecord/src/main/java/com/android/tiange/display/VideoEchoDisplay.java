@@ -67,7 +67,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 	private RenderFrameBuffer mFboBuffer;
 	private CamaraHelper mCameraHelper;
 
-	private boolean isFrontCamera = true;
+	private boolean isFrontCamera = false;
 
 	private boolean isCameraSwapDown = true;
 
@@ -184,7 +184,11 @@ public class VideoEchoDisplay extends MagicDisplay {
 	public void SetFramerate( int fps ){
 		frameRate = fps;
 	}
-	
+	public void SetDefaultCamera(boolean isFront)
+	{
+		isFrontCamera = isFront;
+		isCameraSwapDown = false;
+	}
 	public void SwapCamera( boolean isFront ){
 		isFrontCamera = isFront;
 		isCameraSwapDown = false;

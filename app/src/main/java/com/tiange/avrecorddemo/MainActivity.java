@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
     private static final int MESSAGE_UPDATA_TEXTVIEW_STATUS = 0;
     private static final int MESSAGE_UPDATA_TEXTVIEW_TIME = 1;
     TextView mTextViewRecordStatus;
+    private boolean mbFront = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,6 +129,7 @@ public class MainActivity extends Activity {
                     toast.setGravity(Gravity.CENTER, 0, 100);
                     toast.show();
                 }
+                mMagicModule.swapCamera(mbFront);
                 mMagicModule.StartCameraPreview();
             }
         } );
@@ -169,12 +171,15 @@ public class MainActivity extends Activity {
                         if (mMagicModule == null)
                         {
                             Toast toast = Toast.makeText(getApplicationContext(),
-                                    "未启动预览，不能切换摄像头", Toast.LENGTH_LONG);
+                                    "未初始化模块，不能切换摄像头", Toast.LENGTH_LONG);
                             toast.setGravity(Gravity.CENTER, 0, 0);
                             toast.show();
                             return;
                         }
-                        int nRet = mMagicModule.swapCamera(false);
+
+                        mbFront = !mbFront;
+                        int nRet = mMagicModule.swapCamera(mbFront);
+
                         if (nRet == -1)
                         {
                             Toast toast = Toast.makeText(getApplicationContext(),

@@ -65,8 +65,17 @@ public class MediaMuxerWrapper {
 	 */
 	public MediaMuxerWrapper(String filepath) throws IOException {
 
+		Log.v(TAG, "new mMediaMuxer");
 
 		mMediaMuxer = new MediaMuxer(filepath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+		if (mMediaMuxer != null)
+		{
+			Log.v(TAG, "mMediaMuxer NOT NULL = " + mMediaMuxer);
+		}
+		else
+		{
+			Log.v(TAG, "mMediaMuxer IS NULL + " + mMediaMuxer);
+		}
 		mEncoderCount = 2;
 		mStatredCount = 0;
 		mIsStarted = false;
