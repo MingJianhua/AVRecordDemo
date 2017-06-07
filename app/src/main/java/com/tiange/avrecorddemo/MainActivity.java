@@ -3,6 +3,7 @@ package com.tiange.avrecorddemo;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.hardware.SensorManager;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.tiange.libavrecord.CommonDef;
 import com.tiange.libavrecord.MagicModule;
 
 import java.io.File;
@@ -70,14 +72,14 @@ public class MainActivity extends Activity {
                     @Override
                     public void OnRecordStatus(int nStatus)
                     {
-                        if(nStatus == MagicModule.AVSTATUS_RECORD_START)
+                        if(nStatus == CommonDef.AVSTATUS_RECORD_START)
                         {
                             Message message = new Message();
                             message.what = MESSAGE_UPDATA_TEXTVIEW_STATUS;
                             message.arg1 = 1;
                             mHandler.sendMessage(message);
                         }
-                        if(nStatus == MagicModule.AVSTATUS_RECORD_STOP)
+                        if(nStatus == CommonDef.AVSTATUS_RECORD_STOP)
                         {
                             Message message = new Message();
                             message.what = MESSAGE_UPDATA_TEXTVIEW_STATUS;
@@ -105,6 +107,12 @@ public class MainActivity extends Activity {
                         Log.i( "=====>222222" , "OnMediaStatus" + status );
 
                     }
+                    @Override
+                    public void OnTakePicture(Bitmap bitmap)
+                    {
+                        Log.i( "MJHTEST" , "OnTakePicture " + bitmap );
+
+                    }
                 },  getCaptureFilePath(Environment.DIRECTORY_MOVIES, ".mp4"));
 /*
                 //默认参数，可以不设，如需改变输出参数，在这里设置
@@ -116,7 +124,6 @@ public class MainActivity extends Activity {
                 mMagicModule.SetParam(mMagicModule.PARAM_AUDIO_SAMPLE_RATE, 44100);
                 mMagicModule.SetParam(mMagicModule.PARAM_BEAUTY_LEVEL, 0);//1-5，对美图等自带美颜相机，关闭美颜
 */
-                mMagicModule.SetParam(mMagicModule.PARAM_BEAUTY_LEVEL, 1);//1-5，对美图等自带美颜相机，关闭美颜
 
                 if(!mMagicModule.isCameraPermission())
                 {
@@ -150,7 +157,8 @@ public class MainActivity extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mMagicModule.CapturePhoto(getOutputMediaFilePath());
+                        mMagicModule.CapturePhoto(null);//getOutputMediaFilePath());
+                        //输入为null时回调Ontakepicture, 输入有效路径时不回调
                     }
                 });
         btnStartRecord.setOnClickListener(

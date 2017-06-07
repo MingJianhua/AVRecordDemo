@@ -36,10 +36,14 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.tiange.libavrecord.CommonDef;
+
 public class MediaMuxerWrapper {
 
-	public interface IStatusCallbak{
+	public interface IMuxerStatusCallbak{
 		void OnRecordTime(long nTime);//毫秒
+		void OnRecordStatus(int nStatus);
+
 	}
 	private static final boolean DEBUG = false;	// TODO set false on release
 	private static final String TAG = "MediaMuxerWrapper";
@@ -51,7 +55,7 @@ public class MediaMuxerWrapper {
 	private final MediaMuxer mMediaMuxer;	// API >= 18
 	private int mEncoderCount, mStatredCount;
 	private boolean mIsStarted;
-	private IStatusCallbak mStatusCallback;
+	private IMuxerStatusCallbak mStatusCallback;
 
 	long mStartTick      = 0;
 	long mAudioCurTick   = 0;
@@ -81,7 +85,7 @@ public class MediaMuxerWrapper {
 		mIsStarted = false;
 	}
 
-	public void SetCallback(IStatusCallbak callbak)
+	public void SetCallback(IMuxerStatusCallbak callbak)
 	{
 		mStatusCallback = callbak;
 	}
@@ -177,7 +181,7 @@ public class MediaMuxerWrapper {
 			Log.e(TAG,  "MediaMuxer stopped:");
 		}
 		mVideoCurTick = mStartTick = mAudioCurTick = 0;
-
+		mStatusCallback.OnRecordStatus(CommonDef.AVSTATUS_RECORD_STOP);
 	}
 
 	/**

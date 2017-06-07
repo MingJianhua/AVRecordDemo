@@ -38,6 +38,7 @@ import com.seu.magicfilter.utils.OpenGLUtils;
 import com.seu.magicfilter.utils.Rotation;
 import com.seu.magicfilter.utils.SaveTask;
 import com.seu.magicfilter.utils.TextureRotationUtil;
+import com.tiange.libavrecord.MagicModule;
 
 public class VideoEchoDisplay extends MagicDisplay {
 
@@ -48,6 +49,8 @@ public class VideoEchoDisplay extends MagicDisplay {
 		public void OnEncodeStatus(int status);
 
 		public void OnH264Data(byte[] data, int len, int keyframe);
+
+		public void OnTakePicture(Bitmap bitmap);
 	}
 
 	private MagicCameraInputFilter mCameraInputFilter;
@@ -76,7 +79,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 	private LostStatic mStatic = new LostStatic();
 
 	private int mRotation = 0;
-	//private IVideoCallbak mCallback;
+	private IVideoCallbak mCallback;
 
 	public VideoEchoDisplay(Context context, GLSurfaceView glSurfaceView,
 							IVideoCallbak callback, int nOutWidth, int nOutHeight,
@@ -91,7 +94,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 //		mOutHeight = nOutWidth;//nOutHeight;
 		mOutWidth = nOutWidth;
 		mOutHeight = nOutHeight;
-		//mCallback = callback;
+		mCallback = callback;
 		mCameraInputFilter = new MagicCameraInputFilter();
 //		SetBeautyLevel( mBeautyLevel );
 		mVideoEncoder = new TextureMovieEncoder(callback);
@@ -230,7 +233,9 @@ public class VideoEchoDisplay extends MagicDisplay {
 	public void onTakePicture(File file, SaveTask.onPictureSaveListener listener, Camera.ShutterCallback shutterCallback, int nRotation){
 		//mCameraHelper.setRotation(90);
 		mRotation = nRotation;
-		mSaveTask = new SaveTask(mContext, file, listener);
+		if (file != null) {
+			mSaveTask = new SaveTask(mContext, file, listener);
+		}
 		mCameraHelper.takePicture(null, null, mPictureCallback);
 	}
 
@@ -256,14 +261,29 @@ public class VideoEchoDisplay extends MagicDisplay {
 			if(mFilters != null){
 				getBitmapFromGL(bitmap, true);
 			}else{
-				mSaveTask.execute(bitmap);
+				if (mSaveTask != null)
+				{
+					mSaveTask.execute(bitmap);
+				}
+				else
+				{
+					mCallback.OnTakePicture(bitmap);
+				}
+
 			}
 			mCameraHelper.startPreview();
 		}
 	};
 
 	protected void onGetBitmapFromGL(Bitmap bitmap){
-		mSaveTask.execute(bitmap);
+		if (mSaveTask != null)
+		{
+			mSaveTask.execute(bitmap);
+		}
+		else
+		{
+			mCallback.OnTakePicture(bitmap);
+		}
 	}
 
 	@Override
@@ -321,7 +341,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 			mCameraInputFilter.onDrawFrame(mTextureId, mGLCubeBuffer,
 					mGLTextureBuffer);
 
-		} else {  
+		} else {
 
 			int mBuftextureID = mCameraInputFilter.onDrawToTexture(mTextureId);
 

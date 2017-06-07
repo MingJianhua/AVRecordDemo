@@ -9,6 +9,7 @@ import com.android.tiange.encoder.MediaMuxerWrapper;
 import android.app.Activity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.media.AudioFormat;
@@ -46,9 +47,7 @@ public class MagicModule {
 	public static int AVSTATUS_CAMERA_OPEN_FAIL = 1;  //camera open fail
 	public static int AVSTATUS_AUDIO_OPEN_FAIL  = 2;  //audio record open fail
 	
-	public static int AVSTATUS_RECORD_START = 10;
-	public static int AVSTATUS_RECORD_STOP = 11;
-	public static int AVSTATUS_RECORD_TIME = 12;
+
 
 	public interface IStatusCallbak{
 		
@@ -57,8 +56,9 @@ public class MagicModule {
 		void OnMediaStatus( int status );
 
 		void OnRecordTime(long nTime);//毫秒
-		void OnRecordStatus(int nStatus);//毫秒
+		void OnRecordStatus(int nStatus);
 
+		void OnTakePicture(Bitmap bitmap);
 	}
 	
 	int STATUS_STOP 	= 0;
@@ -199,14 +199,20 @@ public class MagicModule {
 			e.printStackTrace();
 		}
 
-		MediaMuxerWrapper.IStatusCallbak mMagicModuleCallback = new MediaMuxerWrapper.IStatusCallbak() {
+		MediaMuxerWrapper.IMuxerStatusCallbak mMagicModuleCallback = new MediaMuxerWrapper.IMuxerStatusCallbak() {
 
 			@Override
 			public void OnRecordTime(long nTime)//毫秒
 			{
 				mStatusCallback.OnRecordTime(nTime);
 			}
+			@Override
+			public void OnRecordStatus(int nStatus)
+			{
+				mStatusCallback.OnRecordStatus(nStatus);
+			}
 		};
+
 		mMixerWrapper.SetCallback(mMagicModuleCallback);
 		mAudioEncorder = new AudioAACEncoder( null );
 		mAudioEncorder.setMuxer(mMixerWrapper);
@@ -216,7 +222,7 @@ public class MagicModule {
 		mVideoEcho.SetMixerWapper(mMixerWrapper);
 		mVideoEcho.StartRecord();
 
-		mStatusCallback.OnRecordStatus(AVSTATUS_RECORD_START);
+		mStatusCallback.OnRecordStatus(CommonDef.AVSTATUS_RECORD_START);
 
 	}
 	public void StopRecord()
@@ -224,7 +230,7 @@ public class MagicModule {
 
 		mAudioEncorder.stop();
 		mVideoEcho.StopRecord();
-		mStatusCallback.OnRecordStatus(AVSTATUS_RECORD_STOP);
+		//mStatusCallback.OnRecordStatus(CommonDef.AVSTATUS_RECORD_STOP);
 	}
 	public void StartCameraPreview() {
 
@@ -236,7 +242,28 @@ public class MagicModule {
 			mContext.addContentView(framelayout, new LayoutParams(-1, -1));
 		}
 
+		final VideoEchoDisplay.IVideoCallbak mVideoCallback = new VideoEchoDisplay.IVideoCallbak() {
+			@Override
+			public void OnMediaFormat(MediaFormat format)
+			{
 
+			}
+			@Override
+			public void OnEncodeStatus(int status)
+			{
+
+			}
+			@Override
+			public void OnH264Data(byte[] data, int len, int keyframe)
+			{
+
+			}
+			@Override
+			public void OnTakePicture(Bitmap bitmap)
+			{
+				mStatusCallback.OnTakePicture(bitmap);
+			}
+		};
 		framelayout.post(new Runnable() {
 			@Override
 			public void run() {
@@ -253,7 +280,7 @@ public class MagicModule {
 					mGlSurfaceView.setY((height - viewHeght) / 2);
 				}
 				mVideoEcho = new VideoEchoDisplay(mContext, mGlSurfaceView,
-						null, m_nOutWidth, m_nOutHeight, 1920, 1080,
+						mVideoCallback, m_nOutWidth, m_nOutHeight, 1920, 1080,
 						mBitrate, null);
 				mVideoEcho.SetLevel(m_nBeautyLevel);
 				mVideoEcho.SetDefaultCamera(mbFront);
@@ -265,9 +292,16 @@ public class MagicModule {
 		//mAudioEncorder.start();
 	}
 
-	public void CapturePhoto(String sFilePath)
+	public void CapturePhoto(String sFilePath)//输入为null时回调Ontakepicture
 	{
-		mVideoEcho.onTakePicture(new File(sFilePath), null, null, mOrientation);
+		if (sFilePath != null)
+		{
+			mVideoEcho.onTakePicture(new File(sFilePath), null, null, mOrientation);
+		}
+		else
+		{
+			mVideoEcho.onTakePicture(null, null, null, mOrientation);
+		}
 	}
 	public void DeleteInput(){
 		if( framelayout == null )
