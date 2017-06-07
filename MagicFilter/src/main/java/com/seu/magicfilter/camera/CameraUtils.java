@@ -45,15 +45,18 @@ public class CameraUtils {
         }
 
         for (Camera.Size size : parms.getSupportedPreviewSizes()) {
-            Log.d(TAG, "supported: " + size.width + "x" + size.height);
+            Log.d(TAG, "PreviewSupported: " + size.width + "x" + size.height);
         }
-
+        for (Camera.Size size : parms.getSupportedPictureSizes()) {
+            Log.d(TAG, "PictureSupported: " + size.width + "x" + size.height);
+        }
         for (Camera.Size size : parms.getSupportedPreviewSizes()) {
             if (size.width == width && size.height == height) {
                 Log.d(TAG, "parms.setPreviewSize " +
                         width + "x" + height);
                 parms.setPreviewSize(width, height);
                 parms.setPictureSize(width, height);
+                parms.setRotation(0);
                 return;
             }
         }

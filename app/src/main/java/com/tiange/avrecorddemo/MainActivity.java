@@ -1,7 +1,9 @@
 package com.tiange.avrecorddemo;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -9,6 +11,8 @@ import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -68,6 +72,23 @@ public class MainActivity extends Activity {
         btnStart.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (PermissionChecker.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.CAMERA },
+                            v.getId());
+                    return;
+                }
+                if (PermissionChecker.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.RECORD_AUDIO },
+                            v.getId());
+                }
+                if (PermissionChecker.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_DENIED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
+                            v.getId());
+                }
+
                 mMagicModule  = new MagicModule(  mActivity, mVideoContainer , new MagicModule.IStatusCallbak() {
                     @Override
                     public void OnRecordStatus(int nStatus)
@@ -159,7 +180,7 @@ public class MainActivity extends Activity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        mMagicModule.CapturePhoto(null);//getOutputMediaFilePath());
+                        mMagicModule.CapturePhoto(getOutputMediaFilePath());
                         //输入为null时回调Ontakepicture, 输入有效路径时不回调
                     }
                 });
