@@ -179,9 +179,10 @@ public class MediaMuxerWrapper {
 			mMediaMuxer.release();
 			mIsStarted = false;
 			Log.e(TAG,  "MediaMuxer stopped:");
+			mStatusCallback.OnRecordStatus(CommonDef.AVSTATUS_RECORD_STOP);
 		}
 		mVideoCurTick = mStartTick = mAudioCurTick = 0;
-		mStatusCallback.OnRecordStatus(CommonDef.AVSTATUS_RECORD_STOP);
+
 	}
 
 	/**

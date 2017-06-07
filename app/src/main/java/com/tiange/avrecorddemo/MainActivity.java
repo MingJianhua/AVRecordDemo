@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void OnRecordStatus(int nStatus)
                     {
+
                         if(nStatus == CommonDef.AVSTATUS_RECORD_START)
                         {
                             Message message = new Message();
@@ -85,6 +86,7 @@ public class MainActivity extends Activity {
                             message.what = MESSAGE_UPDATA_TEXTVIEW_STATUS;
                             message.arg1 = 0;
                             mHandler.sendMessage(message);
+                            Log.e(TAG, "MESSAGE_UPDATA_TEXTVIEW_STATUS STOP");
                         }
                     }
                     @Override
@@ -222,9 +224,13 @@ public class MainActivity extends Activity {
             if(msg.what == MESSAGE_UPDATA_TEXTVIEW_STATUS){
                 int nStatus = msg.arg1;
                 if (nStatus == 0)
+                {
                     mTextViewRecordStatus.setText("Stop");
+                }
                 else if (nStatus == 1)
+                {
                     mTextViewRecordStatus.setText("Recording");
+                }
 
 
             }
