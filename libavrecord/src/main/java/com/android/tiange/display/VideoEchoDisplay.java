@@ -470,7 +470,7 @@ public class VideoEchoDisplay extends MagicDisplay {
 					com.seu.magicfilter.camera.CameraUtils.choosePreviewSize(
 							parms, mCameraWidth, mCameraHeight);
 					//mCamera.setDisplayOrientation(90);
-					parms.setRecordingHint(true);
+					//parms.setRecordingHint(true); 
 					List<String> focusModes = parms.getSupportedFocusModes();
 					if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
 						parms.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
